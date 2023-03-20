@@ -6,41 +6,69 @@
 #include <vector> 
 #include <sys/stat.h>
 
-/* This code is derived in parts from LZW@RosettaCode for UA CS435 
-*/ 
- 
+/* This code is derived in parts from LZW@RosettaCode for UA CS435 */
+
 // Compress a string to a list of output symbols.
 // The result will be written to the output iterator
 // starting at "result"; the final iterator is returned.
 
 template <typename Iterator>
-Iterator compress(const std::string &uncompressed, Iterator result) {
-  // Build the dictionary, start with 256.
-  int dictSize = 256;
-  std::map<std::string,int> dictionary;
-  for (int i = 0; i < dictSize; i++)
-    dictionary[std::string(1, i)] = i;
- 
-  std::string w;
-  for (std::string::const_iterator it = uncompressed.begin();
-       it != uncompressed.end(); ++it) {
-    char c = *it;
-    std::string wc = w + c;
-    if (dictionary.count(wc))
-      w = wc;
-    else {
+Iterator compress(const std::string &uncompressed, Iterator result) 
+{
+   /* INITIALIZE THE DICTIONARY */
+
+   int dictSize = 256;                    // start with 256. 
+   std::map<std::string, int> dictionary; // dictionary maps strings to integers
+   for (int i = 0; i < dictSize; ++i)
+   {
+      // from 0-255, map character representation to integer representation
+      dictionary[std::string(1, i)] = i;
+   }
+   
+   /* BUILD OUT THE DICTIONARY FOR INPUT STRING */
+
+   // represents longest matching "prefix" for the next iteration
+   // initialized to empty string
+   std::string w; 
+
+   // loop through each character of uncompressed string
+   for (std::string::const_iterator it = uncompressed.begin(); it != uncompressed.end(); ++it) 
+   {
+      // store character at this iteration 
+      char c = *it;
+
+      // append the previous longest prefix with this character
+      std::string wc = w + c;
+      if (dictionary.count(wc))
+      {
+         // if already in dictionary, this is the new longest prefix
+         w = wc;
+      }
+
+      // if not already in dictionary
+      else 
+      {
+         // write code for previous longest prefix to output buffer and increment for next iteration
+         *result++ = dictionary[w];
+
+         // Add wc to the dictionary. Assuming the size is 4096!!!
+         if (dictionary.size() < 4096)
+         {
+            dictionary[wc] = dictSize++;
+         }
+   
+         // new longest prefix is the current character 
+         w = std::string(1, c);
+      }
+   }
+   
+   // Output the code for w.
+   if (!w.empty())
+   {
       *result++ = dictionary[w];
-      // Add wc to the dictionary. Assuming the size is 4096!!!
-      if (dictionary.size()<4096)
-         dictionary[wc] = dictSize++;
-      w = std::string(1, c);
-    }
-  }
- 
-  // Output the code for w.
-  if (!w.empty())
-    *result++ = dictionary[w];
-  return result;
+   }
+      
+   return result;
 }
  
 // Decompress a list of output ks to a string.
@@ -195,9 +223,9 @@ void binaryIODemo(std::vector<int> compressed) {
 
 int main() {
   std::vector<int> compressed;
-  // example
-  std::string example = "AAAAAAABBBBBB";
+  std::string example = "AAAAAAABBBBBB"; //example
   
+  // pass string to compress and a back_insert_iterator that inserts elements at the end of container "compressed".
   compress(example, std::back_inserter(compressed));
   for(auto itr=compressed.begin(); itr !=compressed.end(); itr++)
         std::cout<<"\n"<<*itr;
