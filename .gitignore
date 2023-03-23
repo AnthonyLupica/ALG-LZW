@@ -1,0 +1,8 @@
+# Cmake Ignores 
+build/CMakeFiles/
+build/CMakeCache.txt
+build/cmake_install.cmake
+build/Makefile
+
+# Ignore compressed files
+*.lzw
