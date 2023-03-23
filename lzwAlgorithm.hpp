@@ -176,7 +176,7 @@ int binaryString2Int(std::string p) {
 }
 
 // this part is just for demonstration
-void binaryIODemo(std::vector<int> compressed) {
+void binaryIODemo(std::vector<int> &compressed) {
    
    //example for integer c; looking for a 9 bit code
    int c = 69;
@@ -194,7 +194,7 @@ void binaryIODemo(std::vector<int> compressed) {
       bcode+=p;
    }
    
-   //writing to file
+   // writing to file
    std::cout << "string 2 save : "<<bcode << "\n";
    std::string fileName = "example435.lzw"; //just a demo; you should not hard-code the file name.
    std::ofstream myfile;
