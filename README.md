@@ -1,1 +1,1 @@
-# ALG-LZW
+# Project 2: LZW Compression Algorithm
