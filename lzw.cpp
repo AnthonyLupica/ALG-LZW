@@ -156,7 +156,7 @@ void decompressionDriver(const std::string &filename)
 
    std::ofstream outFile;
    outFile.open(derivedFileToWrite.c_str());
-   outFile << decompressed << std::endl;
+   outFile << decompressed;
    std::cout << "Results of decompression written -> " << derivedFileToWrite << "'\n";
 
    struct stat filestatus;
