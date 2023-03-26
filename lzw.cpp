@@ -8,9 +8,12 @@
 #include <sstream> // std::stringstream
 
 void compressionDriver(const std::string &filename);
-// void decompressionDriver();
+void decompressionDriver(const std::string &filename);
+void compressionWriteResult(const std::string &filename, const std::vector<int> &compressed);
+std::string compressionReadResult(const std::string &filename);
 bool isValidFileExtension(const std::string &filename, const std::string &extension);
-void LZW_writeResult(const std::string &filename, const std::vector<int> &compressed);
+void logMessage(const std::string &message, const std::string &data, char startOrEnd);
+void logMessage(const std::string &message, char startOrEnd);
 
 int main(int argc, char* argv[]) 
 {
@@ -40,7 +43,7 @@ int main(int argc, char* argv[])
       case 'e':
       case 'E': 
          std::cout << "Option Select: expand '" << filename << "'\n\n";
-         // decompressionDriver();
+         decompressionDriver(filename);
          break;
       default:
          std::cerr << "Error: unrecognized option '" << option
@@ -99,15 +102,87 @@ void compressionDriver(const std::string &filename)
    // pass string to compress and a back_insert_iterator that inserts elements at the end of container "compressed".
    // std::vector<int> compressed holds the sequence of codes produced by LZW compression 
    std::vector<int> compressed;
+
    compress(inputTxt, std::back_inserter(compressed));
 
    // Binary IO to write compression results
-   LZW_writeResult(filename, compressed);
+   compressionWriteResult(filename, compressed);
 
    return;
 }
 
-void LZW_writeResult(const std::string &filename, const std::vector<int> &compressed) 
+void decompressionDriver(const std::string &filename) 
+{
+   // validate file is a .lzw
+   if (!isValidFileExtension(filename, ".lzw"))
+   {
+      std::cerr << "Error: unsupported file extension" << std::endl;
+      std::cerr << "Expansion can only be performed on a .lzw file" << std::endl;
+
+      return;
+   }
+
+   // binary IO to read result of compression 
+   std::string binaryString = compressionReadResult(filename);
+
+   // convert to integer code sequence
+   
+   int bits = 12; // length of single code
+   std::vector<int> codeSequence;
+
+   // convert 12 bits at a time and push into vector 
+   for (int i = 0; i < binaryString.size(); i += bits) 
+   {
+      std::string chunk = binaryString.substr(i, bits);
+      int code = binaryString2Int(chunk);
+      codeSequence.push_back(code);
+   }
+
+   // remove the final code if its a 0
+   if (codeSequence.back() == 0) 
+   {
+      codeSequence.pop_back();
+   }
+
+   // decompress and write result
+   std::string decompressed = decompress(codeSequence.begin(), codeSequence.end());
+
+   // produce substring of filename with extension removed
+   // assuming the file extension is ".lzw", we know we don't want the final 4 characters
+   std::string extensionlessFileName = filename.substr(0, filename.length() - 4);
+   
+   // derive file name target
+   std::string derivedFileToWrite = extensionlessFileName + "2.txt"; 
+
+   std::ofstream outFile;
+   outFile.open(derivedFileToWrite.c_str());
+   outFile << decompressed << std::endl;
+   std::cout << "Results of decompression written -> " << derivedFileToWrite << "'\n";
+
+   struct stat filestatus;
+   stat(derivedFileToWrite.c_str(), &filestatus );
+   long fsize = filestatus.st_size; // get the size of the file in bytes
+
+   // logging 
+   logMessage("Results of decompression written -> " + derivedFileToWrite, '\0');
+
+   std::string message = "Size of decompressed file " + derivedFileToWrite + ": ";
+   logMessage(message, std::to_string(fsize), '\0');
+
+   message = "Compression Code Sequence produced from " + filename + ": ";
+   std::string data;
+   for (auto element : codeSequence) 
+   {
+      data += std::to_string(element) + " ";
+   }
+   logMessage(message, data, '\0');
+
+   logMessage("Binary String Saved: ", binaryString, 'e');
+   
+   return;
+}
+
+void compressionWriteResult(const std::string &filename, const std::vector<int> &compressed) 
 {
    // assuming length of code word is 12 bits 
    int bits = 12;
@@ -156,8 +231,85 @@ void LZW_writeResult(const std::string &filename, const std::vector<int> &compre
       char outputByte = (char) (byteValue & 255); // save the string byte by byte
       outFile.write(&outputByte, 1);  
    }
-  
-   outFile.close();
+
+   std::cout << "Results of compression written -> " << derivedFileToWrite << "'\n";
+
+   // logging 
+   logMessage("Results of compression written -> '" + derivedFileToWrite, 's');
+
+   std::string message = "Compression Code Sequence for " + filename + ": ";
+   std::string data;
+   for (auto element : compressed) 
+   {
+      data += std::to_string(element) + " ";
+   }
+   logMessage(message, data, '\0');
+
+   logMessage("Binary String Saved: ", bCode, 'e');
+   
+   return;
+}
+
+std::string compressionReadResult(const std::string &filename) 
+{
+   std::ifstream inFile;
+   inFile.open(filename.c_str(),  std::ios::binary); 
+
+   if (!inFile)
+   {
+      std::cerr << "Error: unable to open file '" << filename << "'\n";
+      std::cerr << "Please ensure it is located in the same directory as the executable" << std::endl;
+
+      exit(1);
+   }
+
+   struct stat filestatus;
+   stat(filename.c_str(), &filestatus );
+   long fsize = filestatus.st_size; // get the size of the file in bytes
+
+   std::string message = "Size of compressed file " + filename + ": ";
+   logMessage(message, std::to_string(fsize), 's');
+   
+   char contents[fsize];
+   inFile.read(contents, fsize);
+   std::string zeros = "00000000";
+   
+   // empty string to hold the binary representation of the file contents
+   std::string binaryString = "";
+   
+   // loop controls 
+   long byteCount = 0;
+   
+   while(byteCount < fsize) 
+   {
+      // Convert the byte to an unsigned char
+      unsigned char unsignedByte =  (unsigned char) contents[byteCount];
+
+      // Convert the byte to a binary string
+      std::string byteBinaryString = ""; //a binary string
+      for (int j = 0; j < 8 && unsignedByte > 0; j++) 
+      {         
+		   if (unsignedByte % 2 == 0)
+         {
+            byteBinaryString= "0" + byteBinaryString;
+         }
+         else
+         {
+            byteBinaryString = "1" + byteBinaryString;
+         }
+         unsignedByte = unsignedByte >> 1;   
+      }
+
+      // Pad the binary string with zeros if necessary
+      byteBinaryString = zeros.substr(0, 8-byteBinaryString.size()) + byteBinaryString; 
+
+      // Append the binary string to the overall binary representation of the file
+      binaryString += byteBinaryString; 
+
+      byteCount++;
+   } 
+
+   return binaryString;
 }
 
 bool isValidFileExtension(const std::string &filename, const std::string &extension)
@@ -177,3 +329,50 @@ bool isValidFileExtension(const std::string &filename, const std::string &extens
 
    return true;
 }
+
+void logMessage(const std::string &message, const std::string &data, char startOrEnd) 
+{
+   // Open the file in append mode
+   std::ofstream log_file("log_file.txt", std::ios_base::app);
+
+   if (startOrEnd == 's')
+   {
+      log_file << "___START LOG___\n\n";
+   }
+
+   // Write message to log
+   log_file << message << data << std::endl;
+
+   if (startOrEnd == 'e')
+   {
+      log_file << "\n___END LOG___\n\n";  
+   }
+   
+   log_file.close();
+
+   return;
+}
+
+void logMessage(const std::string &message, char startOrEnd)
+{
+   // Open the file in append mode
+   std::ofstream log_file("log_file.txt", std::ios_base::app);
+
+   if (startOrEnd == 's')
+   {
+      log_file << "___START LOG___\n\n";
+   }
+
+   // Write message to log
+   log_file << message << std::endl;
+
+   if (startOrEnd == 'e')
+   {
+      log_file << "\n___END LOG___\n\n";  
+   }
+   
+   log_file.close();
+
+   return;
+}
+
