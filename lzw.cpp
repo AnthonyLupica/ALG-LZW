@@ -51,23 +51,6 @@ int main(int argc, char* argv[])
          return 1;
    }
 
-   // std::vector<int> compressed;
-   // std::string example = "AAAAAAABBBBBB"; //example
-   
-   // // pass string to compress and a back_insert_iterator that inserts elements at the end of container "compressed".
-   // compress(example, std::back_inserter(compressed));
-   // for(auto itr=compressed.begin(); itr !=compressed.end(); itr++)
-   // {
-   //    std::cout<<"\n"<<*itr;
-   // }
-            
-   // std::string decompressed = decompress(compressed.begin(), compressed.end());
-   // std::cout << "\nfinal decompressed:" << decompressed << std::endl;
-
-   // // demo as the name suggests
-   // std::cout << "\n ---------- binary IO demo ----------- \n";
-   // binaryIODemo(compressed);
-   
    return 0;
 }
 
@@ -159,17 +142,10 @@ void decompressionDriver(const std::string &filename)
    outFile << decompressed;
    std::cout << "Results of decompression written -> " << derivedFileToWrite << "'\n";
 
-   struct stat filestatus;
-   stat(derivedFileToWrite.c_str(), &filestatus );
-   long fsize = filestatus.st_size; // get the size of the file in bytes
-
    // logging 
    logMessage("Results of decompression written -> " + derivedFileToWrite, '\0');
 
-   std::string message = "Size of decompressed file " + derivedFileToWrite + ": ";
-   logMessage(message, std::to_string(fsize), '\0');
-
-   message = "Compression Code Sequence produced from " + filename + ": ";
+   std::string message = "Compression Code Sequence produced from " + filename + ": ";
    std::string data;
    for (auto element : codeSequence) 
    {
