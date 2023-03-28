@@ -8,7 +8,13 @@ project(lzw435)
 set(CMAKE_CXX_STANDARD 11)
 
 # Set the source files for the project
-set(SOURCE_FILES lzw435.cpp)
+set(SOURCE_FILES1 lzw435.cpp)
 
 # Add an executable target named lzw435
-add_executable(lzw435 ${SOURCE_FILES})
+add_executable(lzw435 ${SOURCE_FILES1})
+
+# Set the source files for the project
+set(SOURCE_FILES2 lzw435M.cpp)
+
+# Add an executable target named lzw435M
+add_executable(lzw435M ${SOURCE_FILES2})
