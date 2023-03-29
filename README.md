@@ -1,6 +1,9 @@
 # Project 2: LZW Compression Algorithm
 3460:435/535 Algorithms
 
+The purpose of this programming project is to learn and implement a variant of the compression algorithm LZW. Your tasks for this
+assignment are to (1) run LZW as it is and (2) modify LZW to incorporate the advantages of variable length coding
+
 ### Build 
 1. CMAKE file provided 
 2. mkdir build 
