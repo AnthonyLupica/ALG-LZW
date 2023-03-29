@@ -13,8 +13,6 @@ void decompressionDriver(const std::string &filename);
 void compressionWriteResult(const std::string &filename, const std::vector<int> &compressed);
 std::string compressionReadResult(const std::string &filename);
 bool isValidFileExtension(const std::string &filename, const std::string &extension);
-void logMessage(const std::string &message, const std::string &data, char startOrEnd);
-void logMessage(const std::string &message, char startOrEnd);
 
 const std::unordered_set<int> POWERS_OF_2 = { 512, 1024, 2048, 4096, 8192, 16384, 32768 };
 
@@ -47,8 +45,9 @@ int main(int argc, char* argv[])
       case 'E': 
          std::cout << "Option Select: expand '" << filename << "'\n\n";
 
-         try {
-         decompressionDriver(filename);
+         try 
+         {
+            decompressionDriver(filename);
          } catch(const char *a) {
              std::cout << a;
          }
@@ -169,19 +168,6 @@ void decompressionDriver(const std::string &filename)
    outFile << decompressed;
    std::cout << "Results of decompression written -> " << derivedFileToWrite << "'\n";
 
-   // logging 
-   logMessage("Results of decompression written -> " + derivedFileToWrite, '\0');
-
-   std::string message = "Compression Code Sequence produced from " + filename + ": ";
-   std::string data;
-   for (auto element : codeSequence) 
-   {
-      data += std::to_string(element) + " ";
-   }
-   logMessage(message, data, '\0');
-
-   logMessage("Binary String Saved: ", binaryString, 'e');
-   
    return;
 }
 
@@ -249,19 +235,6 @@ void compressionWriteResult(const std::string &filename, const std::vector<int> 
 
    std::cout << "Results of compression written -> " << derivedFileToWrite << "'\n";
 
-   // logging 
-   logMessage("Results of compression written -> '" + derivedFileToWrite, 's');
-
-   std::string message = "Compression Code Sequence for " + filename + ": ";
-   std::string data;
-   for (auto element : compressed) 
-   {
-      data += std::to_string(element) + " ";
-   }
-   logMessage(message, data, '\0');
-
-   logMessage("Binary String Saved: ", bCode, 'e');
-   
    return;
 }
 
@@ -282,9 +255,6 @@ std::string compressionReadResult(const std::string &filename)
    stat(filename.c_str(), &filestatus );
    long fsize = filestatus.st_size; // get the size of the file in bytes
 
-   std::string message = "Size of compressed file " + filename + ": ";
-   logMessage(message, std::to_string(fsize), 's');
-   
    char contents[fsize];
    inFile.read(contents, fsize);
    std::string zeros = "00000000";
@@ -343,51 +313,5 @@ bool isValidFileExtension(const std::string &filename, const std::string &extens
    }
 
    return true;
-}
-
-void logMessage(const std::string &message, const std::string &data, char startOrEnd) 
-{
-   // Open the file in append mode
-   std::ofstream log_file("log_file.txt", std::ios_base::app);
-
-   if (startOrEnd == 's')
-   {
-      log_file << "___START LOG___\n\n";
-   }
-
-   // Write message to log
-   log_file << message << data << std::endl;
-
-   if (startOrEnd == 'e')
-   {
-      log_file << "\n___END LOG___\n\n";  
-   }
-   
-   log_file.close();
-
-   return;
-}
-
-void logMessage(const std::string &message, char startOrEnd)
-{
-   // Open the file in append mode
-   std::ofstream log_file("log_file.txt", std::ios_base::app);
-
-   if (startOrEnd == 's')
-   {
-      log_file << "___START LOG___\n\n";
-   }
-
-   // Write message to log
-   log_file << message << std::endl;
-
-   if (startOrEnd == 'e')
-   {
-      log_file << "\n___END LOG___\n\n";  
-   }
-   
-   log_file.close();
-
-   return;
 }
 
