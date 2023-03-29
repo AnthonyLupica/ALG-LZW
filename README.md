@@ -16,6 +16,8 @@ assignment are to (1) run LZW as it is and (2) modify LZW to incorporate the adv
    - Decompression => ./lzw435 e [.lzw file name]
 
 - Part 2
+   - Compression   => ./lzw435M c [.txt file name]
+   - Decompression => ./lzw435M e [.lzw2 file name]
 
 ### Assumptions
 - CMAKE version >= 3.10
