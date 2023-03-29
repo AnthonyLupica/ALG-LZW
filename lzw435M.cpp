@@ -124,22 +124,26 @@ void decompressionDriver(const std::string &filename)
    
    // convert n bits at a time and push into vector 
    std::string chunk;
+   int code;
    for (int i = 0; i < binaryString.size(); i += bits) 
    {
-      chunk = binaryString.substr(i, bits);
+      if (POWERS_OF_2.count(codeCount))
+      {
+         --i;
+      }
 
-      std::cout << "| " << chunk << " |" << std::endl;
-      
-      int code = binaryString2Int(chunk);
-      
-      codeSequence.push_back(code);
+      chunk = binaryString.substr(i, bits);
 
       // we've reached the next power of 2, time to increment bits
       if (POWERS_OF_2.count(codeCount))
       {
          ++bits;
       }
-      
+
+      code = binaryString2Int(chunk);
+
+      codeSequence.push_back(code);
+
       // increment codeCount
       ++codeCount;
    }
